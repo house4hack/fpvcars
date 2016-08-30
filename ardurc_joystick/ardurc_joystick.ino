@@ -1,4 +1,12 @@
+#include <Ethernet.h>
+#include <EthernetUdp.h>
+#include <EthernetServer.h>
+#include <Dns.h>
+#include <Dhcp.h>
+#include <EthernetClient.h>
+
 #include "RCEncoder.h"
+// requires USB HOST library v2 from: https://github.com/felis/USB_Host_Shield_2.0.git
 #include <usbhid.h>
 #include <hiduniversal.h>
 #include <usbhub.h>
@@ -42,8 +50,8 @@ JoystickReportParser Joy(&JoyEvents);
 #define MIN 1000
 #define MAX 2000
 
-long brake_start = 0;
-
+boolean braking = false;
+int xval = 0, yval = 0;
 
 void setup ()
 {
@@ -116,22 +124,26 @@ void EncoderEvents::OnGamePadChanged(const GamePadEventData *evt){
   int trim = map(analogRead(A0),0,1024, -30,30);
   Serial.println(trim);
 
-  int yval = evt->Z2+trim;
-  if(yval > 110) yval = 110;
-  Serial.println(yval);
-  
-
-
-  int bragbutton = evt->Z1 & 0x1;
-
-
-
   // Steering
   encoderWrite(0, MIN+MAX-map(xval,0,1000,MIN,MAX));
-  // Acc + Brake
-  encoderWrite(1, map(yval,28,180,MIN,MAX)); 
 
-  if(yval>101){
+  // Acc + Brake
+  int yval = evt->Z2+trim;
+
+  // turbo mode with button, else speed limited
+  int bragbutton = evt->Z1 & 0x1;
+  if (bragbutton != 1) {
+    if (yval < 60) yval = 60;
+  }
+
+  if (yval > 100) {
+    yval = 100;
+  }
+
+  Serial.println(yval);
+  encoderWrite(1, map(yval,28,180,MIN,MAX));     
+
+  if(yval>99){
     encoderWrite(2, PBRAKE); 
     Serial.println("Brake");
   } else  if(bragbutton == 1){
