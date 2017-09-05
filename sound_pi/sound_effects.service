@@ -1,0 +1,16 @@
+[Unit]
+Description=soundeffects
+After=multi-user.target
+
+[Service]
+#StartLimitIntervalSec=0
+RestartSec=2
+StartLimitBurst=10000
+#TimeoutStartSec=0
+#IgnoreSIGPIPE=false
+ExecStart=/home/pi/fpvcars/sound_pi/sound_effects.sh
+Restart=always
+WorkingDirectory=/home/pi/fpvcars/sound_pi/
+
+[Install]
+WantedBy=multi-user.target
