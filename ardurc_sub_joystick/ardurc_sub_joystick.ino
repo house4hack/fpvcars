@@ -132,11 +132,11 @@ void EncoderEvents::OnGamePadChanged(const GamePadEventData *evt){
   encoderWrite(2,  map(yval,-512,512,MIN,MAX));
   encoderWrite(3,  map(yval,-512,512,MIN,MAX));
   
-  Serial.print("X:");
+ /* Serial.print("X:");
   Serial.println(channel0);
    Serial.print("Y:");
   Serial.println(channel1); 
-
+*/
 }
 
 
