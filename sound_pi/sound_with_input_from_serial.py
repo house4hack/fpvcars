@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[3]:
+# In[1]:
 
 # Generate fake serial message to simulate Arduino
 
@@ -35,7 +35,7 @@ def start_fake_messages():
 
 
 
-# In[1]:
+# In[2]:
 
 def find_serial(use_fake_port=False):
     if use_fake_port:
@@ -49,7 +49,7 @@ def find_serial(use_fake_port=False):
     
 
 
-# In[28]:
+# In[3]:
 
 import pygame
 from pygame import mixer
@@ -67,7 +67,7 @@ SONAR= sound_dir+"sonar_ping.wav"
 TORPEDO= sound_dir + "Torpedo Launching Sub-SoundBible.com-618051175.wav"
 
 
-# In[74]:
+# In[4]:
 
 class Sound_effect(object):
     def __init__(self, source, channel, mixer, max_volume):
@@ -118,7 +118,7 @@ class Sonar(Sound_effect):
        
 
 
-# In[43]:
+# In[5]:
 
 def init_sound():
     mixer.pre_init(44100, -16, 8, 2048)
@@ -127,17 +127,17 @@ def init_sound():
     
 
 
-# In[44]:
+# In[8]:
 
 
 def process_sound(effect_arr, background_volume, ser):
-    if playbackground>0:
+    if background_volume>0:
         mixer.music.play(-1)
         mixer.music.set_volume(background_volume)
     try:
         while True:
             d = None
-            while ser.in_waiting:
+            while ser.inWaiting():
                 try:
                     d =  json.loads(ser.readline())
                 except Exception as e:
@@ -152,7 +152,7 @@ def process_sound(effect_arr, background_volume, ser):
         mixer.music.stop()
 
 
-# In[76]:
+# In[9]:
 
 port = find_serial(use_fake_port=False)
 ser = serial.Serial(port,115200)  # open serial port
