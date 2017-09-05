@@ -59,12 +59,6 @@ import serial
 import glob
 import random
 
-sound_dir = "/home/schalk/tmp/"
-port = '/dev/ttyACM0'
-BACKGROUND = sound_dir+"Underwater Bubbles Sound - Meditation White Noise Relaxation.mp3"
-BOAT= sound_dir + "boat1.wav"
-SONAR= sound_dir+"sonar_ping.wav"
-TORPEDO= sound_dir + "Torpedo Launching Sub-SoundBible.com-618051175.wav"
 
 
 # In[4]:
@@ -152,7 +146,14 @@ def process_sound(effect_arr, background_volume, ser):
         mixer.music.stop()
 
 
-# In[9]:
+# In[10]:
+
+sound_dir = "sound_effects/"
+port = '/dev/ttyACM0'
+BACKGROUND = sound_dir+"bubbles.mp3"
+BOAT= sound_dir + "boat.wav"
+SONAR= sound_dir+"sonar_ping.wav"
+TORPEDO= sound_dir + "torpedo.wav"
 
 port = find_serial(use_fake_port=False)
 ser = serial.Serial(port,115200)  # open serial port
