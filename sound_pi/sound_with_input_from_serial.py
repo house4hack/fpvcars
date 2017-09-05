@@ -67,14 +67,16 @@ SONAR= sound_dir+"sonar_ping.wav"
 TORPEDO= sound_dir + "Torpedo Launching Sub-SoundBible.com-618051175.wav"
 
 
-# In[33]:
+# In[74]:
 
 class Sound_effect(object):
-    def __init__(self, source, channel, mixer):
+    def __init__(self, source, channel, mixer, max_volume):
         self.source = source
         self.sound = mixer.Sound(source)
         self.channel = channel
         self.mixer = mixer
+        self.max_volume = max_volume
+        
         
     def play(self, controls):
         self.sound.play()
@@ -83,16 +85,17 @@ class Sound_effect(object):
         self.sound.stop()
     
 class Boat(Sound_effect):
-    def __init__(self, source, channel, mixer):
-        super(Boat, self).__init__(source, channel, mixer)
+    def __init__(self, source, channel, mixer,max_volume):
+        super(Boat, self).__init__(source, channel, mixer,max_volume)
         mixer.Channel(self.channel).play(self.sound,-1)
+        self.mixer.Channel(self.channel).set_volume(0,0)
     
     def play(self, controls):
-        x = controls['X']/1023.0 + 0.5
-        y = controls['Y']/1023.0 + 0.5
-        z = controls['Z']/1023.0 + 0.5
+        x = controls['X']/1023.0 
+        y = controls['Y']/1023.0
+        z = controls['Z']/1023.0 
         button = controls['button']
-        self.mixer.Channel(self.channel).set_volume(1-x,1-y)
+        self.mixer.Channel(self.channel).set_volume(max(0,-2*x+y)*self.max_volume,max(0,2*x+y)*self.max_volume)
         
 class Torpedo(Sound_effect):
     def play(self, controls):
@@ -102,9 +105,10 @@ class Torpedo(Sound_effect):
                 
 
 class Sonar(Sound_effect):
-    def __init__(self, source, channel, mixer):
-        super(Sonar, self).__init__(source, channel, mixer)
+    def __init__(self, source, channel, mixer,max_volume):
+        super(Sonar, self).__init__(source, channel, mixer,max_volume)
         self.next_play = 0
+        self.mixer.Channel(self.channel).set_volume(self.max_volume, self.max_volume)
 
     def play(self, controls):
         if(time.time()>self.next_play):
@@ -114,20 +118,22 @@ class Sonar(Sound_effect):
        
 
 
-# In[30]:
+# In[43]:
 
 def init_sound():
     mixer.pre_init(44100, -16, 8, 2048)
     mixer.init()
     mixer.music.load(BACKGROUND)
+    
 
 
-# In[31]:
+# In[44]:
 
 
-def process_sound(effect_arr, playbackground, ser):
-    if playbackground:
+def process_sound(effect_arr, background_volume, ser):
+    if playbackground>0:
         mixer.music.play(-1)
+        mixer.music.set_volume(background_volume)
     try:
         while True:
             d = None
@@ -146,19 +152,31 @@ def process_sound(effect_arr, playbackground, ser):
         mixer.music.stop()
 
 
-# In[34]:
+# In[76]:
 
 port = find_serial(use_fake_port=False)
 ser = serial.Serial(port,115200)  # open serial port
 print(ser.name)
 
 init_sound()
-boat = Boat(BOAT, 0, mixer)
-torpedo = Torpedo(TORPEDO, 1, mixer)
-sonar = Sonar(SONAR,2,mixer)
+boat = Boat(BOAT, 0, mixer,0.3)
+torpedo = Torpedo(TORPEDO, 1, mixer,1)
+sonar = Sonar(SONAR,2,mixer,0.15)
 
-process_sound([boat, torpedo, sonar], False, ser)
+process_sound([boat, torpedo, sonar], 0.7, ser)
 
+
+# In[26]:
+
+
+
+
+# In[27]:
+
+
+
+
+# In[ ]:
 
 
 
