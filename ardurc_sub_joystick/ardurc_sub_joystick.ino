@@ -106,7 +106,7 @@ void loop ()
 
 void EncoderEvents::OnGamePadChanged(const GamePadEventData *evt){
   int xval = evt->x-512;
-  Serial.print("{\"x\":");
+  Serial.print("{\"X\":");
   Serial.print(xval);
 
   int yval = (1023 - evt->y)-512;
