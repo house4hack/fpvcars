@@ -88,12 +88,15 @@ class Boat(Sound_effect):
         x = controls['X']/1023.0 
         y = controls['Y']/1023.0
         z = controls['Z']/1023.0 
-        button = controls['button']
-        self.mixer.Channel(self.channel).set_volume(max(0,-2*x+y)*self.max_volume,max(0,2*x+y)*self.max_volume)
+        button = controls['shoot']
+        self.mixer.Channel(self.channel).set_volume(max(0,-2*x+1.0*z)*self.max_volume,max(0,2*x+1.0*z)*self.max_volume)
         
+    def stop(self):
+        self.mixer.Channel(self.channel).set_volume(0,0)
+
 class Torpedo(Sound_effect):
     def play(self, controls):
-        if controls['button']==1:
+        if controls['shoot']==1:
             if(self.mixer.Channel(self.channel).get_busy()==0):
                 self.mixer.Channel(self.channel).play(self.sound)
                 
@@ -109,8 +112,6 @@ class Sonar(Sound_effect):
             if(self.mixer.Channel(self.channel).get_busy()==0):
                 self.mixer.Channel(self.channel).play(self.sound)
             self.next_play = random.randint(15,60) + time.time()
-       
-
 
 # In[5]:
 
@@ -125,9 +126,7 @@ def init_sound():
 
 
 def process_sound(effect_arr, background_volume, ser):
-    if background_volume>0:
-        mixer.music.play(-1)
-        mixer.music.set_volume(background_volume)
+    isbackground_playing = False
     try:
         while True:
             d = None
@@ -137,8 +136,19 @@ def process_sound(effect_arr, background_volume, ser):
                 except Exception as e:
                     print(e)
             if not d == None:
-                for effect in effect_arr:
-                    effect.play(d)
+                if d['timeout']==0:
+                    if not isbackground_playing:
+                        mixer.music.play(-1)
+                        mixer.music.set_volume(background_volume)
+                        isbackground_playing = True
+                    for effect in effect_arr:
+                        effect.play(d)
+                else:
+                    for effect in effect_arr:
+                        effect.stop()
+                    mixer.music.stop()
+                    isbackground_playing = False
+
 
     except KeyboardInterrupt:
         for effect in effect_arr:
@@ -160,9 +170,9 @@ ser = serial.Serial(port,115200)  # open serial port
 print(ser.name)
 
 init_sound()
-boat = Boat(BOAT, 0, mixer,0.3)
+boat = Boat(BOAT, 0, mixer,0.5)
 torpedo = Torpedo(TORPEDO, 1, mixer,1)
-sonar = Sonar(SONAR,2,mixer,0.15)
+sonar = Sonar(SONAR,2,mixer,0.12)
 
 process_sound([boat, torpedo, sonar], 0.7, ser)
 
