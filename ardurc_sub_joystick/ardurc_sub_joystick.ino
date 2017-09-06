@@ -40,6 +40,8 @@ JoystickReportParser Joy(&JoyEvents);
 
 long brake_start = 0;
 
+long session_start = -1000000;
+
 
 void setup ()
 {
@@ -117,20 +119,54 @@ void EncoderEvents::OnGamePadChanged(const GamePadEventData *evt){
   Serial.print(",\"Z\":");
   Serial.print(zval);
 
-  int but = evt->buttons_a;
-  Serial.print(",\"button\":");
-  Serial.print(but);
+  //int but = evt->buttons_a;
+  int but1 = evt->buttons_a & 0x1;
+  //Serial.print(" Buttons B: ");
+  int but2 = ((evt->buttons_a & 0xF0) >> 6) & 0x1;
+
+  
+  Serial.print(",\"shoot\":");
+  Serial.print(but1);
+
+  Serial.print(",\"reset\":");
+  Serial.print(but2);
+
+  char timeout = (millis() - session_start)/1000 > 60*3;
+
+  Serial.print(",\"timeout\":");
+  if(timeout){
+   Serial.print("1");
+  } else {
+   Serial.print("0");  
+  }
+
+  
   Serial.println("}");
 
   int channel0 = -(xval + zval);
   int channel1 = -(xval - zval);
 
-  encoderWrite(0,map(channel0,-512,512,MIN,MAX));
-  // Acc + Brake
-  encoderWrite(1,  map(channel1,-512,512,MIN,MAX)); 
+  if(but2 == 1){
+      session_start = millis();
+      Serial.println("session start");
+  }
 
-  encoderWrite(2,  map(yval,-512,512,MIN,MAX));
-  encoderWrite(3,  map(yval,-512,512,MIN,MAX));
+  if(!timeout){
+    
+    encoderWrite(0,map(channel0,-512,512,MIN,MAX));
+    // Acc + Brake
+    encoderWrite(1,  map(channel1,-512,512,MIN,MAX)); 
+  
+    encoderWrite(2,  map(yval,-512,512,MIN,MAX));
+    encoderWrite(3,  map(yval,-512,512,MIN,MAX));
+  } else {
+    encoderWrite(0, map(50, 0,100, MIN, MAX));
+  
+    encoderWrite(1, map(50, 0,100, MIN, MAX));
+    encoderWrite(2, map(50, 0,100, MIN, MAX));
+    encoderWrite(3, map(50, 0,100, MIN, MAX));
+    
+  }
   
  /* Serial.print("X:");
   Serial.println(channel0);
